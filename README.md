@@ -24,7 +24,8 @@ docker-compose down --remove-orphans && docker-compose up --build
 |-----|-------------|
 | http://localhost:8888 | spring-oauth2 endpoint |
 | http://localhost:80 | angular-oauth2 endpoint |
-| http://localhost:8080/auth/ | local keycloak endpoint |
+| http://localhost:80/user | Get user information (only for debug) |
+| http://localhost:80/accesstoken | Get token information (only for debug) |
 
 ## Credentials
 

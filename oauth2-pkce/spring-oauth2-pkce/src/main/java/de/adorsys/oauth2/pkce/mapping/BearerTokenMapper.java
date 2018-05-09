@@ -2,15 +2,21 @@ package de.adorsys.oauth2.pkce.mapping;
 
 import de.adorsys.oauth2.pkce.service.PkceTokenRequestService;
 import org.adorsys.encobject.userdata.ObjectMapperSPI;
+import org.springframework.security.oauth2.common.DefaultExpiringOAuth2RefreshToken;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.common.OAuth2RefreshToken;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Base64;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class BearerTokenMapper {
+
+    private static final int MILLIS_PER_SECOND = 1000;
 
     private final ObjectMapperSPI objectMapper;
 
@@ -23,6 +29,8 @@ public class BearerTokenMapper {
         values.put("access_token", tokenResponse.getAccess_token());
         values.put("token_type", tokenResponse.getToken_type());
         values.put("expires_in", tokenResponse.getExpires_in());
+        values.put("refresh_token", tokenResponse.getRefresh_token());
+        values.put("refresh_token_expires_in", tokenResponse.getRefresh_token_expires_in());
 
         String valuesAsJson;
         try {
@@ -54,10 +62,19 @@ public class BearerTokenMapper {
             throw new RuntimeException(e);
         }
 
-        return new BearerToken(
+        BearerToken bearerToken = new BearerToken(
                 tokenResponse.getAccess_token(),
-                tokenResponse.getExpires_in().intValue()
+                tokenResponse.getExpires_in().intValue() * MILLIS_PER_SECOND
         );
+
+        OAuth2RefreshToken refreshToken = new RefreshToken(
+                tokenResponse.getRefresh_token(),
+                tokenResponse.getRefresh_token_expires_in() * MILLIS_PER_SECOND
+        );
+
+        bearerToken.setRefreshToken(refreshToken);
+
+        return bearerToken;
     }
 
     private String fromBase64(String base64) {
@@ -70,6 +87,13 @@ public class BearerTokenMapper {
         private BearerToken(String value, int expireIn) {
             super(value);
             setExpiresIn(expireIn);
+        }
+    }
+
+    private static final class RefreshToken extends DefaultExpiringOAuth2RefreshToken {
+
+        private RefreshToken(String value, long expireIn) {
+            super(value, new Date(System.currentTimeMillis() + expireIn));
         }
     }
 }

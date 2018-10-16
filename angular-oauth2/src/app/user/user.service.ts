@@ -3,17 +3,18 @@ import {User} from "./user";
 import {Observable} from "rxjs/Observable";
 import 'rxjs/add/operator/map';
 import {HttpClient} from "@angular/common/http";
+import {AppConfigService} from "../app.config.service";
 
 @Injectable()
 export class UserService {
 
-  constructor(private http: HttpClient) {
+  constructor(private appConfigService: AppConfigService, private http: HttpClient) {
   }
 
   public getUser(): Observable<User> {
     console.log("getting user info...");
 
-    let principalResponse = this.http.get<PrincipalResponse>("/user");
+    let principalResponse = this.http.get<PrincipalResponse>(`${this.appConfigService.getBackendUrl()}/user`);
 
     return principalResponse.map(r => {
       return {

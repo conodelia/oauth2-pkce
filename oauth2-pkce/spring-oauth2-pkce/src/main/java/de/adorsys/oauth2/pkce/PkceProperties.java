@@ -27,10 +27,6 @@ public class PkceProperties {
     // List of requestUrl that lead to auto trigger auth
     private String userAgentAutoProtectedPages;
 
-    private String accessTokenCookieName;
-    private String refreshTokenCookieName;
-    private String codeVerifierCookieName;
-    private String userAgentStateCookieName;
     private String userAgentPermittedAll;
 
     public String getClientId() {
@@ -132,38 +128,6 @@ public class PkceProperties {
     public List<String> userAgentAutoProtectedPages(){
         if(StringUtils.isBlank(userAgentAutoProtectedPages)) return Collections.emptyList();
         return Arrays.asList(userAgentAutoProtectedPages.split(","));
-    }
-
-    public String getAccessTokenCookieName() {
-        return accessTokenCookieName;
-    }
-
-    public void setAccessTokenCookieName(String accessTokenCookieName) {
-        this.accessTokenCookieName = accessTokenCookieName;
-    }
-
-    public String getRefreshTokenCookieName() {
-        return refreshTokenCookieName;
-    }
-
-    public void setRefreshTokenCookieName(String refreshTokenCookieName) {
-        this.refreshTokenCookieName = refreshTokenCookieName;
-    }
-
-    public String getCodeVerifierCookieName() {
-        return codeVerifierCookieName;
-    }
-
-    public void setCodeVerifierCookieName(String codeVerifierCookieName) {
-        this.codeVerifierCookieName = codeVerifierCookieName;
-    }
-
-    public String getUserAgentStateCookieName() {
-        return userAgentStateCookieName;
-    }
-
-    public void setUserAgentStateCookieName(String userAgentStateCookieName) {
-        this.userAgentStateCookieName = userAgentStateCookieName;
     }
 
 	public String getUserAgentPermittedAll() {

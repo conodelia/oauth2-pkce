@@ -1,0 +1,15 @@
+server:
+  port: 8888
+
+pkce:
+  client-id: moped-client
+  client-secret: 939d28bd-8d06-4cd3-8324-10b4c7b12852
+  access-token-uri: http://localhost:8080/auth/realms/moped/protocol/openid-connect/token
+  user-authorization-uri: http://localhost:8080/auth/realms/moped/protocol/openid-connect/auth
+  user-info-uri: http://localhost:8080/auth/realms/moped/protocol/openid-connect/userinfo
+  logout-uri: http://localhost:8080/auth/realms/moped/protocol/openid-connect/logout
+  scope: openid+profile
+  code-challenge-method: S256
+  response-type: code
+#  cookie-name: <The cookie name: (default: bearer_token)>
+#  secure-cookie: <Defines if the cooke is used only for https, (default: true)>

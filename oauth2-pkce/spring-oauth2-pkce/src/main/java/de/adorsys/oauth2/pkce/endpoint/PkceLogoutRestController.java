@@ -4,6 +4,10 @@ import de.adorsys.oauth2.pkce.PkceProperties;
 import de.adorsys.oauth2.pkce.service.CookieService;
 import de.adorsys.oauth2.pkce.service.LogoutRedirectService;
 import de.adorsys.oauth2.pkce.util.TokenConstants;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ResponseHeader;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,18 +21,19 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
-@RestController("Pkce Logout Endpoint")
+@Api(value = "OAUTH2 PKCE Logout")
+@RestController
 //@RequestMapping set with de.adorsys.oauth2.pkce.WebConfig
-public class PkceRestLogoutController {
+public class PkceLogoutRestController {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PkceRestLogoutController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PkceLogoutRestController.class);
 
     private final PkceProperties pkceProperties;
     private final CookieService cookieService;
     private final LogoutRedirectService logoutRedirectService;
 
     @Autowired
-    public PkceRestLogoutController(
+    public PkceLogoutRestController(
             PkceProperties pkceProperties,
             CookieService cookieService,
             LogoutRedirectService logoutRedirectService
@@ -37,29 +42,48 @@ public class PkceRestLogoutController {
         this.cookieService = cookieService;
         this.logoutRedirectService = logoutRedirectService;
     }
-    
+
+    @ApiResponses(value = {
+            @ApiResponse(
+                    code = HttpServletResponse.SC_FOUND,
+                    message = "Redirect to IDP logout page",
+                    responseHeaders = {
+                            @ResponseHeader(
+                                    name = "location",
+                                    description = "Url to IDP's logout page"
+                            ), @ResponseHeader(
+                                    name = "Set-Cookie",
+                                    description = TokenConstants.ACCESS_TOKEN_COOKIE_NAME + "=null; Path=/; Secure; HttpOnly; Max-Age=0"
+                            ), @ResponseHeader(
+                                    name = "Set-Cookie",
+                                    description = TokenConstants.REFRESH_TOKEN_COOKIE_NAME + "=null; Path=/; Secure; HttpOnly; Max-Age=0"
+                            )
+                    }
+            )
+    })
     @GetMapping(path = {TokenConstants.LOGOUT_LINK})
     public void logout(
             HttpServletRequest request,
-            @RequestParam(name = TokenConstants.REDIRECT_URI_PARAM_NAME, required=false) String redirectUri,
+            @RequestParam(name = TokenConstants.REDIRECT_URI_PARAM_NAME, required = false) String redirectUri,
             HttpServletResponse response
-    ) throws IOException{
-        if(LOG.isTraceEnabled()) LOG.trace("started logout(HttpServletRequest request)");
+    ) throws IOException {
+        if (LOG.isTraceEnabled()) LOG.trace("started logout(HttpServletRequest request)");
 
-    	response.addCookie(cookieService.deletionCookie(pkceProperties.getAccessTokenCookieName(), "/"));
-    	response.addCookie(cookieService.deletionCookie(pkceProperties.getRefreshTokenCookieName(), "/"));
+        response.addCookie(cookieService.deletionCookie(TokenConstants.ACCESS_TOKEN_COOKIE_NAME, "/"));
+        response.addCookie(cookieService.deletionCookie(TokenConstants.REFRESH_TOKEN_COOKIE_NAME, "/"));
 
         LogoutRedirectService.LogoutRedirect redirect = buildLogoutRedirect(request, redirectUri);
         response.sendRedirect(redirect.getRedirectUrl());
 
-        if(LOG.isTraceEnabled()) LOG.trace("finished logout(HttpServletRequest request, HttpServletResponse response)");
+        if (LOG.isTraceEnabled())
+            LOG.trace("finished logout(HttpServletRequest request, HttpServletResponse response)");
     }
 
     private LogoutRedirectService.LogoutRedirect buildLogoutRedirect(HttpServletRequest request, String redirectUri) {
         LogoutRedirectService.LogoutRedirect redirect;
 
         Optional<String> maybeSelectedRedirectUri = selectRedirectUri(request, redirectUri);
-        if(maybeSelectedRedirectUri.isPresent()) {
+        if (maybeSelectedRedirectUri.isPresent()) {
             String selectedRedirectUri = maybeSelectedRedirectUri.get();
             redirect = logoutRedirectService.getRedirect(selectedRedirectUri);
         } else {
@@ -72,15 +96,15 @@ public class PkceRestLogoutController {
     private Optional<String> selectRedirectUri(HttpServletRequest request, String redirectUri) {
         Optional<String> selectedRedirectUri = Optional.empty();
 
-        if(StringUtils.isNotEmpty(redirectUri)) {
+        if (StringUtils.isNotEmpty(redirectUri)) {
             selectedRedirectUri = Optional.of(redirectUri);
         }
 
         String referer = request.getHeader(TokenConstants.REFERER_HEADER_KEYWORD);
 
-    	if(StringUtils.isNotBlank(referer)) {
+        if (StringUtils.isNotBlank(referer)) {
             selectedRedirectUri = Optional.of(referer);
-    	}
+        }
 
         return selectedRedirectUri;
     }

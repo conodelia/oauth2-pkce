@@ -2,7 +2,6 @@ package de.adorsys.springoauth2;
 
 import de.adorsys.oauth2.pkce.EnableOauth2PkceServer;
 import de.adorsys.oauth2.pkce.PkceProperties;
-import de.adorsys.oauth2.pkce.filter.ClientAuthencationEntryPoint;
 import de.adorsys.oauth2.pkce.filter.CookiesAuthenticationFilter;
 import de.adorsys.oauth2.pkce.filter.OpaqueTokenAuthenticationFilter;
 import de.adorsys.oauth2.pkce.service.PkceTokenRequestService;
@@ -24,21 +23,18 @@ public class MySecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private TokenAuthenticationService tokenAuthenticationService;
     private CookiesAuthenticationFilter cookiesAuthenticationFilter;
-    private ClientAuthencationEntryPoint clientAuthencationEntryPoint;
     private OpaqueTokenAuthenticationFilter opaqueTokenAuthenticationFilter;
     private PkceProperties pkceProperties;
 
     public MySecurityConfiguration(
             TokenAuthenticationService tokenAuthenticationService,
             CookiesAuthenticationFilter cookiesAuthenticationFilter,
-            ClientAuthencationEntryPoint clientAuthencationEntryPoint,
             PkceTokenRequestService pkceTokenRequestService,
             PkceProperties pkceProperties
     ) {
         super();
         this.tokenAuthenticationService = tokenAuthenticationService;
         this.cookiesAuthenticationFilter = cookiesAuthenticationFilter;
-        this.clientAuthencationEntryPoint = clientAuthencationEntryPoint;
         this.opaqueTokenAuthenticationFilter = new OpaqueTokenAuthenticationFilter(pkceTokenRequestService);
         this.pkceProperties = pkceProperties;
     }
@@ -62,7 +58,6 @@ public class MySecurityConfiguration extends WebSecurityConfigurerAdapter {
 
         http.addFilterBefore(new JWTAuthenticationFilter(tokenAuthenticationService), BasicAuthenticationFilter.class)
             .addFilterBefore(opaqueTokenAuthenticationFilter, JWTAuthenticationFilter.class)
-            .addFilterBefore(clientAuthencationEntryPoint, OpaqueTokenAuthenticationFilter.class)
-            .addFilterBefore(cookiesAuthenticationFilter, ClientAuthencationEntryPoint.class);
+            .addFilterBefore(cookiesAuthenticationFilter, OpaqueTokenAuthenticationFilter.class);
     }
 }

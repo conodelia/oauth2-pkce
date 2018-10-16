@@ -1,4 +1,4 @@
-package de.adorsys.springoauth2;
+package de.adorsys.springoauth2.config;
 
 import de.adorsys.oauth2.pkce.EnableOauth2PkceServer;
 import de.adorsys.oauth2.pkce.PkceProperties;
@@ -15,6 +15,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
@@ -46,7 +52,9 @@ public class MySecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         // @formatter:off
-        http
+        http.cors()
+                .configurationSource(corsConfigurationSource())
+                .and()
             .authorizeRequests()
                 .antMatchers(pkceProperties.getAuthEndpoint()).permitAll()
                 .anyRequest().authenticated()
@@ -64,5 +72,23 @@ public class MySecurityConfiguration extends WebSecurityConfigurerAdapter {
             .addFilterBefore(opaqueTokenAuthenticationFilter, JWTAuthenticationFilter.class)
             .addFilterBefore(clientAuthencationEntryPoint, OpaqueTokenAuthenticationFilter.class)
             .addFilterBefore(cookiesAuthenticationFilter, ClientAuthencationEntryPoint.class);
+    }
+
+    private CorsConfigurationSource corsConfigurationSource() {
+        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", getCorsConfiguration());
+
+        return source;
+    }
+
+    private CorsConfiguration getCorsConfiguration() {
+        final CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOrigins(Collections.singletonList("*"));
+        configuration.setAllowedMethods(Collections.singletonList("*"));
+        configuration.setAllowedHeaders(Collections.singletonList("*"));
+        configuration.setAllowCredentials(true);
+
+        return configuration;
     }
 }

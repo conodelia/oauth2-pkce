@@ -1,4 +1,4 @@
-package de.adorsys.springoauth2;
+package de.adorsys.springoauth2.config;
 
 import java.lang.reflect.Method;
 
